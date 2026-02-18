@@ -1,0 +1,23 @@
+{
+  "telegram": {
+    "botToken": "YOUR_TELEGRAM_BOT_TOKEN_HERE",
+    "chatId": -1002339884405,"messageThreadId":26177
+  },
+  "mqtt": {
+    "host": "192.168.88.5",
+    "port": 1883,
+    "username": "username",
+    "password": "password",
+    "topicPrefix": "frigate"
+  },
+  "frigateApi": {
+    "baseUrl": "http://192.168.88.6:5000"
+  },
+  "filters": {
+    "allowedZones": ["Zone"],
+    "allowedLabels": ["person", "car", "truck"]
+  },
+  "notifications": {
+    "defaultMuteMinutes": 60
+  }
+}

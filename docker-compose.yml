@@ -1,0 +1,13 @@
+services:
+  tg-frigate-bot:
+    build: .
+    container_name: tg-frigate-bot
+    restart: unless-stopped
+    environment:
+      TZ: "Europe/Moscow"
+      NODE_ENV: "production"
+    # ВАЖНО: создайте рядом свой config.json (на основе config.example.json)
+    # и он будет примонтирован внутрь контейнера.
+    volumes:
+      - ./config.json:/usr/src/app/config.json:ro
+

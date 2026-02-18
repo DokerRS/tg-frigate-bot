@@ -1,0 +1,22 @@
+{
+  "name": "frigate-telegram-bot",
+  "version": "1.0.0",
+  "description": "Telegram bot for Frigate MQTT events (person/car/truck in zone Zone) with mute and menu.",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "keywords": [
+    "frigate",
+    "telegram",
+    "mqtt",
+    "bot"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^1.13.4",
+    "mqtt": "^5.15.0",
+    "telegraf": "^4.16.3"
+  }
+}
