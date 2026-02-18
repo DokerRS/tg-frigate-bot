@@ -207,7 +207,6 @@ function createBot(config) {
     const text = 'Уведомления: мут, размут, статус.';
     const keyboard = Markup.inlineKeyboard([
       [Markup.button.callback('Включить уведомления', 'unmute')],
-      [Markup.button.callback('Мут 30 мин', 'mute_30')],
       [Markup.button.callback('Статус уведомлений', 'status')],
       [Markup.button.callback('Назад', 'menu_back')],
     ]);
@@ -293,13 +292,6 @@ function createBot(config) {
   bot.action('unmute', async (ctx) => {
     clearMute();
     await safeAnswerCbQuery(ctx, 'Уведомления включены');
-    await ctx.editMessageReplyMarkup(undefined);
-    await ctx.reply(getMuteStatusText(), replyKeyboard);
-  });
-
-  bot.action('mute_30', async (ctx) => {
-    setMuteForMinutes(30);
-    await safeAnswerCbQuery(ctx, 'Мут на 30 минут');
     await ctx.editMessageReplyMarkup(undefined);
     await ctx.reply(getMuteStatusText(), replyKeyboard);
   });
