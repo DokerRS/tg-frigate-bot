@@ -108,7 +108,9 @@ async function main() {
         };
 
         console.log('[EVENT] Sending notification:', text, 'hasPhoto:', !!photo);
-        await sendNotification(text, photo || undefined, keyboard);
+        await sendNotification(text, photo || undefined, keyboard, {
+          camera: payload && payload.camera,
+        });
       } catch (err) {
         console.error('[EVENT] Failed to handle event:', err);
       }

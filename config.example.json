@@ -1,7 +1,16 @@
 {
   "telegram": {
     "botToken": "YOUR_TELEGRAM_BOT_TOKEN_HERE",
-    "chatId": -1002339884405,"messageThreadId":26177
+    "chatId": -1002339884405,
+    "messageThreadId": 26177,
+    "cameraGroups": {
+      "outside": ["front_gate", "driveway"],
+      "inside": ["hall", "kitchen"]
+    },
+    "cameraGroupThreads": {
+      "outside": 26178,
+      "inside": 26179
+    }
   },
   "mqtt": {
     "host": "192.168.88.5",

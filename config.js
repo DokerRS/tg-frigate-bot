@@ -68,6 +68,14 @@ function applyDefaults(cfg) {
     config.telegram.messageThreadId = typeof t === 'number' && Number.isInteger(t) ? t : undefined;
   }
 
+  if (!config.telegram.cameraGroups || typeof config.telegram.cameraGroups !== 'object') {
+    config.telegram.cameraGroups = {};
+  }
+
+  if (!config.telegram.cameraGroupThreads || typeof config.telegram.cameraGroupThreads !== 'object') {
+    config.telegram.cameraGroupThreads = {};
+  }
+
   return config;
 }
 
@@ -94,6 +102,27 @@ function validateConfig(config) {
     config.mqtt.port <= 0
   ) {
     config.mqtt.port = 1883;
+  }
+
+  const { cameraGroups, cameraGroupThreads } = config.telegram;
+  if (cameraGroups && typeof cameraGroups === 'object') {
+    for (const [groupName, cameras] of Object.entries(cameraGroups)) {
+      if (!Array.isArray(cameras) || cameras.some((camera) => typeof camera !== 'string' || !camera.trim())) {
+        throw new Error(
+          `config.telegram.cameraGroups.${groupName} must be an array of non-empty camera names`
+        );
+      }
+    }
+  }
+
+  if (cameraGroupThreads && typeof cameraGroupThreads === 'object') {
+    for (const [groupName, threadId] of Object.entries(cameraGroupThreads)) {
+      if (!Number.isInteger(threadId)) {
+        throw new Error(
+          `config.telegram.cameraGroupThreads.${groupName} must be an integer topic id`
+        );
+      }
+    }
   }
 }
 

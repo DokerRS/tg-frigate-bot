@@ -19,3 +19,15 @@
 
 Бот будет запускаться внутри контейнера командой `npm start` (файл `index.js`),  
 а `config.json` будет примонтирован внутрь контейнера в `/usr/src/app/config.json`.
+
+## Разные camera_groups в разные топики Telegram
+
+Можно маршрутизировать алерты в разные топики (topics) одного Telegram-супергруппового чата.
+
+В `config.json`:
+
+- `telegram.messageThreadId` — дефолтный топик для алертов, если камера не попала в группу.
+- `telegram.cameraGroups` — группы камер (`group -> [camera1, camera2]`).
+- `telegram.cameraGroupThreads` — соответствие группы и topic id (`group -> message_thread_id`).
+
+Пример есть в `config.example.json`.

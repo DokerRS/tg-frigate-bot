@@ -25,7 +25,23 @@ function createBot(config) {
   const token = config.telegram.botToken;
   const chatId = `${config.telegram.chatId}`;
   const threadId = config.telegram.messageThreadId;
+  const cameraGroups = config.telegram.cameraGroups || {};
+  const cameraGroupThreads = config.telegram.cameraGroupThreads || {};
   const telegramExtra = threadId != null ? { message_thread_id: threadId } : {};
+
+  const cameraToGroup = new Map();
+  for (const [groupName, cameras] of Object.entries(cameraGroups)) {
+    for (const camera of cameras) {
+      cameraToGroup.set(camera, groupName);
+    }
+  }
+
+  const allowedThreadIds = new Set(
+    [
+      threadId,
+      ...Object.values(cameraGroupThreads),
+    ].filter((id) => Number.isInteger(id))
+  );
 
   const bot = new Telegraf(token);
 
@@ -65,10 +81,10 @@ function createBot(config) {
     if (!ctx.chat || `${ctx.chat.id}` !== chatId) {
       return;
     }
-    if (threadId != null) {
+    if (allowedThreadIds.size > 0) {
       const msg = ctx.message || ctx.callbackQuery?.message;
       // Разрешаем только сообщения из нашего треда. В «Общем» топике message_thread_id бывает 1 или отсутствует.
-      if (!msg || msg.message_thread_id !== threadId) {
+      if (!msg || !allowedThreadIds.has(msg.message_thread_id)) {
         return;
       }
     }
@@ -436,20 +452,33 @@ function createBot(config) {
     }
   });
 
-  async function sendNotification(text, photo, extraMarkup) {
+  function resolveTelegramExtra(cameraName) {
+    const group = cameraToGroup.get(cameraName);
+    const groupThreadId = group ? cameraGroupThreads[group] : undefined;
+    if (Number.isInteger(groupThreadId)) {
+      return { message_thread_id: groupThreadId };
+    }
+    return telegramExtra;
+  }
+
+  async function sendNotification(text, photo, extraMarkup, options = {}) {
+    const messageExtra = resolveTelegramExtra(options.camera);
     if (photo && photo.buffer) {
-      const options = { ...telegramExtra, caption: text };
+      const sendPhotoOptions = { ...messageExtra, caption: text };
       if (extraMarkup) {
-        options.reply_markup = extraMarkup.reply_markup || extraMarkup;
+        sendPhotoOptions.reply_markup = extraMarkup.reply_markup || extraMarkup;
       }
       return bot.telegram.sendPhoto(
         chatId,
         { source: photo.buffer, filename: photo.filename || 'snapshot.jpg' },
-        options
+        sendPhotoOptions
       );
     }
 
-    return bot.telegram.sendMessage(chatId, text, { ...telegramExtra, reply_markup: extraMarkup || undefined });
+    return bot.telegram.sendMessage(chatId, text, {
+      ...messageExtra,
+      reply_markup: extraMarkup || undefined,
+    });
   }
 
   function sendStatusMessage(text) {
