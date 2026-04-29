@@ -28,11 +28,22 @@ function createBot(config) {
   const cameraGroups = config.telegram.cameraGroups || {};
   const cameraGroupThreads = config.telegram.cameraGroupThreads || {};
   const telegramExtra = threadId != null ? { message_thread_id: threadId } : {};
+  const normalizedThreadByKey = new Map();
+
+  function normalizeName(value) {
+    return typeof value === 'string' ? value.trim().toLowerCase() : '';
+  }
 
   const cameraToGroup = new Map();
   for (const [groupName, cameras] of Object.entries(cameraGroups)) {
     for (const camera of cameras) {
-      cameraToGroup.set(camera, groupName);
+      cameraToGroup.set(normalizeName(camera), groupName);
+    }
+  }
+
+  for (const [key, value] of Object.entries(cameraGroupThreads)) {
+    if (Number.isInteger(value)) {
+      normalizedThreadByKey.set(normalizeName(key), value);
     }
   }
 
@@ -453,16 +464,41 @@ function createBot(config) {
   });
 
   function resolveTelegramExtra(cameraName) {
-    const group = cameraToGroup.get(cameraName);
+    const normalizedCamera = normalizeName(cameraName);
+    const threadByCamera = normalizedThreadByKey.get(normalizedCamera);
+    if (Number.isInteger(threadByCamera)) {
+      return {
+        extra: { message_thread_id: threadByCamera },
+        routeReason: 'camera_direct_thread',
+      };
+    }
+
+    const group = cameraToGroup.get(normalizedCamera);
     const groupThreadId = group ? cameraGroupThreads[group] : undefined;
     if (Number.isInteger(groupThreadId)) {
-      return { message_thread_id: groupThreadId };
+      return {
+        extra: { message_thread_id: groupThreadId },
+        routeReason: `camera_group:${group}`,
+      };
     }
-    return telegramExtra;
+    return {
+      extra: telegramExtra,
+      routeReason: 'fallback_default_thread',
+    };
   }
 
   async function sendNotification(text, photo, extraMarkup, options = {}) {
-    const messageExtra = resolveTelegramExtra(options.camera);
+    const route = resolveTelegramExtra(options.camera);
+    const messageExtra = route.extra;
+    console.log('[BOT] Notification route:', {
+      camera: options.camera,
+      normalizedCamera: normalizeName(options.camera),
+      routeReason: route.routeReason,
+      targetThreadId: messageExtra.message_thread_id || null,
+      fallbackDefaultThread: messageExtra.message_thread_id === threadId,
+      knownGroupNames: Object.keys(cameraGroups),
+      knownThreadKeys: Array.from(normalizedThreadByKey.keys()),
+    });
     if (photo && photo.buffer) {
       const sendPhotoOptions = { ...messageExtra, caption: text };
       if (extraMarkup) {
